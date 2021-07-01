@@ -4,8 +4,33 @@ from torch.utils.data import (
   DataLoader
 )
 import tqdm
+from torchvision.datasets import ImageFolder
 from torchvision import transforms
 import numpy as np
+
+train_images = ImageFolder(
+  "../CASIA-B_train",
+  transform=transforms.Compose([
+    transforms.RandomCrop(88*128),
+    transforms.ToTensor()
+  ])
+)
+
+test_images = ImageFolder(
+  "../CASIA-B_test",
+  transform=transforms.Compose([
+    transforms.RandomCrop(88*128),
+    transforms.ToTensor()
+  ])
+)
+
+train_loader = DataLoader(
+  train_images, batch_size=32, shuffle=True
+)
+
+test_loader = DataLoader(
+  test_images, batch_size=32, shuffle=True
+)
 
 class GEINet(nn.Module):
   def __init__(self):
@@ -19,8 +44,8 @@ class GEINet(nn.Module):
       self.conv2 = nn.Conv2d(18, 45, 5)
       self.norm2 = nn.LocalResponseNorm(5, alpha=0.0001, beta=0.75, k=1.0)
 
-      self.fc1 = nn.Linear(1024, 74)
-      self.fc2 = nn.Linear(74, )
+      self.fc1 = nn.Linear(45*18*28, 1024)
+      self.fc2 = nn.Linear(1024, 74 )
 
       self.dropout = nn.Dropout2d(0.5)
 
@@ -39,3 +64,4 @@ class GEINet(nn.Module):
     l = self.fc2(l)
     l = self.softmax(l)
     return l
+
