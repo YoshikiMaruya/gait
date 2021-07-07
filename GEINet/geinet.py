@@ -65,3 +65,27 @@ class GEINet(nn.Module):
     l = self.softmax(l)
     return l
 
+def eval_net(GEINet, data_loader, device="cpu"):
+  GEINet.eval()
+  ys = []
+  ypreds = []
+  for x, y in data_loader:
+    x = x.to(device)
+    y = y.to(device)
+    with torch.no_grad():
+      _, y_pred = GEINet(x).max(1)
+    ys.append(y)
+    ypreds.append(ys)
+
+    acc = (ys == ypreds).float().sum() / len(ys)
+    return acc.item()
+
+def train_net(GEINet, train_loader, test_loader, only_fc=True, optimizer_cls=optim.Adam, loss_fn=nn.CrossEntropyLoss(), n_iter=10, device="cpu"):
+  train_losses = []
+  train_acc = []
+  val_acc = []
+  if only_fc:
+    optimizer = optimizer_cls(GEINet.fc.parameters())
+  else:
+    optimizer = optimizer_cls(GEINet.parameters())
+  
