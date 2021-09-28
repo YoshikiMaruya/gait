@@ -12,7 +12,7 @@ import numpy as np
 train_images = ImageFolder(
   "../CASIA-B_train",
   transform=transforms.Compose([
-    transforms.RandomCrop(240, 320),
+    transforms.RandomCrop(32),
     transforms.ToTensor()
   ])
 )
@@ -20,7 +20,7 @@ train_images = ImageFolder(
 test_images = ImageFolder(
   "../CASIA-B_test",
   transform=transforms.Compose([
-    transforms.RandomCrop(240, 320),
+    transforms.RandomCrop(32),
     transforms.ToTensor()
   ])
 )
@@ -39,13 +39,13 @@ class GEINet(nn.Module):
       self.relu = nn.ReLU()
       self.softmax = nn.Softmax()
       self.pool1 = nn.MaxPool2d(2, stride=2)
-      self.conv1 = nn.Conv2d(3, 18, 7)
+      self.conv1 = nn.Conv2d(3, 25, 5)
       self.norm1 = nn.LocalResponseNorm(5, alpha=0.0001, beta=0.75, k=1.0)
       self.pool2 = nn.MaxPool2d(3, stride=2)
-      self.conv2 = nn.Conv2d(18, 45, 5)
+      self.conv2 = nn.Conv2d(25, 45, 6)
       self.norm2 = nn.LocalResponseNorm(5, alpha=0.0001, beta=0.75, k=1.0)
 
-      self.fc1 = nn.Linear(45*18*28, 1024)
+      self.fc1 = nn.Linear(18*45, 1024)
       self.fc2 = nn.Linear(1024, 74)
 
       self.dropout = nn.Dropout2d(0.5)
