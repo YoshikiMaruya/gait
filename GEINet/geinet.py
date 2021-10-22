@@ -1,6 +1,6 @@
 from cv2 import resize
 import torch
-from torch import nn, optim
+from torch import nn, optim, linalg
 from torch.optim import optimizer
 from torch.utils.data import (
   DataLoader
@@ -10,6 +10,37 @@ import tqdm
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
 import numpy as np
+import matplotlib.pyplot as plt    #グラフ出力用module
+
+BATCH_SIZE = 31
+WEIGHT_DECAY = 0.005
+LEARNING_RATE = 0.0001
+EPOCH = 100
+
+train_images = ImageFolder(
+  "../CASIA-B_train",
+  transform=transforms.Compose([
+    transforms.Resize((240, 320)),
+    transforms.ToTensor()
+  ])
+)
+
+test_images = ImageFolder(
+  "../CASIA-B_test",
+  transform=transforms.Compose([
+    transforms.Resize((240, 320)),
+    transforms.ToTensor()
+  ])
+)
+
+train_loader = DataLoader(
+  train_images, batch_size=BATCH_SIZE, shuffle=True
+)
+
+test_loader = DataLoader(
+  test_images, batch_size=BATCH_SIZE, shuffle=False
+)
+
 
 class GEINet(nn.Module):
   def __init__(self):
@@ -28,7 +59,7 @@ class GEINet(nn.Module):
 
     self.dropout = nn.Dropout2d(0.5)
 
-  def forward(self, l, fc2_outputs):
+  def forward(self, l):
     l = self.conv1(l)
     l = self.relu(l)
     l = self.pool1(l)
@@ -46,5 +77,25 @@ class GEINet(nn.Module):
     l = self.softmax(l)
     return l, fc2_outputs
 
-gei_l, gei_fc2_outputs = GEINet()
-print(gei_l.forward())
+# gei_l, gei_fc2_outputs = GEINet()
+# print(gei_l.forward())
+
+gei = GEINet()
+
+
+# for i in range(3):
+#   for (inputs, labels) in test_loader:
+#     print(inputs.size())
+#     gei_l, gei_fc2_outputs = gei.forward(inputs)
+#     print(gei_fc2_outputs.size())
+#     print(labels)
+
+#     dist = [[0] * 50 for i in range(50)]
+
+#     for gallery in range(75, 125):
+#       feature_gallery = gei_fc2_outputs
+#       for probe in range(75, 125):
+#         feature_probe = gei_fc2_outputs
+#         norm_inputs = feature_gallery - feature_probe
+#         print(norm_inputs.size())
+#         dist[probe][gallery] = linalg.norm(norm_inputs, 1)
