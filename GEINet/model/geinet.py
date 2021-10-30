@@ -27,10 +27,10 @@ class GEINet(nn.Module):
     l = self.pool2(l)
     l = self.norm2(l)
     l = l.view(l.size()[0], -1)
+    l = self.dropout(l)
     l = self.fc1(l)
     l = self.relu(l)
-    l = self.dropout(l)
     l = self.fc2(l)
-    fc2_outputs = l
+    feature = l
     l = self.softmax(l)
-    return l, fc2_outputs
+    return l, feature
