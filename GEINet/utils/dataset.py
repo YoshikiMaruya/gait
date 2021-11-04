@@ -1,16 +1,42 @@
-import os
-import glob
-from posixpath import basename
+from pathlib import Path
+from torch.utils.data import DataLoader, Dataset, dataloader
+from torchvision import transforms
 from PIL import Image
+from torchvision.datasets.folder import IMG_EXTENSIONS, ImageFolder
 
-dir = '/home/yoshimaru/gait/GEINet/gei_image'
-os.makedirs(dir, exist_ok=True)
+class GEIData(Dataset):
+  IMG_EXTENSIONS = [".png", ".jpg"]
 
-files = glob.glob('/home/yoshimaru/gait/GEI/*.png')
+  def __init__(self, img_dir, transform=None):
+    self.img_paths = self._get_img_paths(img_dir)
+    self.transform = transform
 
-for file in files:
-  image = Image.open(file)
-  image_resize = image.resize((240, 320))
-  root, ext = os.path.splitext(file)
-  basename = os.path.basename(root)
-  image_resize.save(os.path.join(dir, basename + ext))
+  def __getitem__(self, index):
+    path = self.img_paths[index]
+
+    img = Image.open(path)
+
+    if self.transform is not None:
+      img = self.transform(img)
+
+    return img
+
+  def _get_img_paths(self, img_dir):
+
+    img_dir = Path(img_dir)
+    img_paths = [p for p in img_dir.iterdir() if p.suffix in GEIData.IMG_EXTENSIONS]
+
+    return img_paths
+
+  def __len__(self):
+    return len(self.img_paths)
+
+
+# transform = transforms.Compose([transforms.Resize((240, 320)), transforms.ToTensor()])
+
+# dataset = GEIData("/home/yoshimaru/gait/GEI", transform)
+
+# dataloader = DataLoader(dataset, batch_size=20)
+
+# for batch in dataloader:
+#   print(batch.shape)
