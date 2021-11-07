@@ -30,13 +30,3 @@ class GEIData(Dataset):
 
   def __len__(self):
     return len(self.img_paths)
-
-
-# transform = transforms.Compose([transforms.Resize((240, 320)), transforms.ToTensor()])
-
-# dataset = GEIData("/home/yoshimaru/gait/GEI", transform)
-
-# dataloader = DataLoader(dataset, batch_size=20)
-
-# for batch in dataloader:
-#   print(batch.shape)
