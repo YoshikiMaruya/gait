@@ -11,6 +11,8 @@ files = glob.glob('/home/yoshimaru/gait/GEI/*.png')
 
 for f in sorted(files):
   img = Image.open(f)
+  # ここで3チャネルにする。
+  img.convert("RGB")
   root, ext = os.path.splitext(f)
   basename = os.path.basename(root)
   if f[25:28] < "075":

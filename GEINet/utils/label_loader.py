@@ -1,12 +1,17 @@
-import os
+import glob
+from PIL import Image
 
-def label_load(img_dir):
-  labels = list()
-  for label in sorted(list(img_dir)):
-    labels.append(label[25:28])
+def label_load():
+  train_label = list()
+  test_label = list()
 
-  return labels
-def main():
-  print(label_load("/home/yoshimaru/gait/GEINet/gei_image/train_gei"))
-if __name__ == "__main__":
-  main()
+  files = glob.glob('/home/yoshimaru/gait/GEI/*.png')
+
+  for f in sorted(files):
+    img = Image.open(f)
+    if f[25:28] < "075":
+      train_label.append(f[25:28])
+    if f[25:28] >= "075":
+      test_label.append(f[25:28])
+
+  return train_label, test_label
