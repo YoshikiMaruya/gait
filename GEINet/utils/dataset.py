@@ -16,9 +16,11 @@ class GEIData(Dataset):
     label = self.label[index]
 
     img = Image.open(path)
+    img = img.convert("RGB")
 
     if self.transform is not None:
       img = self.transform(img)
+      # label = self.transform(label)
 
     return img, label
 
