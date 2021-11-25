@@ -16,8 +16,8 @@ def label_load():
     if f[25:28] >= "075":
       test_label.append(f[25:28])
 
-  train_label = np.array(train_label, dtype=np.float64)
-  test_label = np.array(test_label, dtype=np.float64)
+  train_label = np.array(train_label, dtype=np.int64)
+  test_label = np.array(test_label, dtype=np.int64)
 
   train_label = torch.from_numpy(train_label).long()
   test_label = torch.from_numpy(test_label).long()
