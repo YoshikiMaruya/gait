@@ -42,9 +42,13 @@ for (inputs, labels) in train_loader:
   optimizer.zero_grad()
   gei_l, gei_feature = gei.forward(inputs)
   # print(inputs)
-  _, predicted = gei_l.max(1)
-  print(gei_l.max(1))
-  print(gei_l)
+  # print(labels)
+  # _, predicted = gei_l.max(1)
+  # print(gei_l.max(1))
+  # print(gei_l)
+  loss = criterion(gei_l, labels)
+  print(loss)
+  loss.backward()
 
 
 # for epoch in range(EPOCH):
@@ -52,6 +56,7 @@ for (inputs, labels) in train_loader:
 #     optimizer.zero_grad()
 #     gei_l, gei_feature = gei.forward(input)
 #     loss = criterion(gei_l, label)
+#     loss.backwards()
 #     optimizer.step()
 
 #   sum_loss = 0.0          #lossの合計
