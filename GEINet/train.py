@@ -1,16 +1,13 @@
 from torch import nn, optim, linalg
-from torch.optim import optimizer
 from torch.utils.data import (
   DataLoader
 )
-import tqdm
-from torchvision.datasets import ImageFolder
 from torchvision import transforms
 import numpy as np
 import matplotlib.pyplot as plt
-import model.geinet
-import utils.dataset
-import utils.label_loader
+from model.geinet import GEINet
+from utils.dataset import GEIData
+from utils.label_loader import label_load
 
 BATCH_SIZE = 1
 WEIGHT_DECAY = 0.005
@@ -19,16 +16,16 @@ MOMENTUM = 0.9
 EPOCH = 100
 
 transform = transforms.Compose([transforms.Resize((240, 320)), transforms.ToTensor()])
-train_label, test_label = utils.label_loader.label_load()
+train_label, test_label = label_load()
 train_label = train_label - 1
 test_label = test_label - 1
 
-train_dataset = utils.dataset.GEIData("/home/yoshimaru/gait/GEINet/gei_image/train_gei", train_label, transform)
-test_dataset = utils.dataset.GEIData("/home/yoshimaru/gait/GEINet/gei_image/test_gei", test_label, transform)
+train_dataset = GEIData("/home/yoshimaru/gait/GEINet/gei_image/train_gei", train_label, transform)
+test_dataset = GEIData("/home/yoshimaru/gait/GEINet/gei_image/test_gei", test_label, transform)
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
-gei = model.geinet.GEINet()
+gei = GEINet()
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(gei.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
@@ -37,18 +34,6 @@ train_loss_value=[]      #trainingのlossを保持するlist
 train_acc_value=[]       #trainingのaccuracyを保持するlist
 test_loss_value=[]       #testのlossを保持するlist
 test_acc_value=[]        #testのaccuracyを保持するlist
-
-for (inputs, labels) in train_loader:
-  optimizer.zero_grad()
-  gei_l, gei_feature = gei.forward(inputs)
-  # print(inputs)
-  # print(labels)
-  # _, predicted = gei_l.max(1)
-  # print(gei_l.max(1))
-  # print(gei_l)
-  loss = criterion(gei_l, labels)
-  print(loss)
-  loss.backward()
 
 
 # for epoch in range(EPOCH):
