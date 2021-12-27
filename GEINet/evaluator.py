@@ -6,6 +6,8 @@ from torch import nn
 import numpy as np
 from torchvision import transforms
 
+DIR = '/home/yoshimaru/gait/GEINet/gei_image/test_gei/'
+
 def evaluation(model):
   prove_images = list()
   gallery_images = list()
@@ -13,7 +15,7 @@ def evaluation(model):
   # prove_list = [["nm-05", "nm-06"], ["bg-01", "bg-02"], ["cl-01","cl-02"]]
   # gallery_list = ["nm-01", "nm-02", "nm-03", "nm-04"]
 
-  test_files = glob.glob('/home/yoshimaru/gait/GEINet/gei_image/test_gei/*.png')
+  test_files = glob.glob(DIR + '*.png')
   transform = transforms.Compose([transforms.Resize((240, 320)), transforms.ToTensor()])
 
   for file in sorted(test_files):
@@ -22,9 +24,8 @@ def evaluation(model):
     if file[51:56] == "nm-01" or file[51:56] == "nm-02" or file[51:56] == "nm-03" or file[51:56] == "nm-04":
       gallery_images.append(file)
 
-  print(len(prove_images))
-  print(len(gallery_images))
-  dist = list()
+  print(len(prove_images) * len(gallery_images))
+  dist = []
   # recognition part
   for i, prove_image in enumerate(prove_images):
     prove_image = Image.open(prove_image).convert('RGB')
@@ -36,11 +37,14 @@ def evaluation(model):
       gallery_image = transform(gallery_image)
       gallery_image = gallery_image.unsqueeze(0)
       _, gallery_feature = model.forward(gallery_image)
-      dist = prove_feature - gallery_feature
+      # dist.append(abs((sum(sum(np.array((prove_feature.tolist())))) - sum(sum(np.array((gallery_feature.tolist())))))/74.0))
+      break
+    break
 
   return dist
 def main():
   geinet = GEINet()
-  print(evaluation(geinet))
+  eval = evaluation(geinet)
+  print(eval)
 if __name__ == "__main__":
   main()
