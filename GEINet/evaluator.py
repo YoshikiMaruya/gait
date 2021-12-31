@@ -1,15 +1,17 @@
 # Yoshiki Maruya
 import glob
 from PIL import Image
+from numpy.random import f
 from model.geinet import GEINet
 from torch import nn
 import numpy as np
 from torchvision import transforms
+import torch
 
 DIR = '/home/yoshimaru/gait/GEINet/gei_image/test_gei/'
 
 def evaluation(model):
-  prove_images = list()
+  probe_images = list()
   gallery_images = list()
 
   # prove_list = [["nm-05", "nm-06"], ["bg-01", "bg-02"], ["cl-01","cl-02"]]
@@ -20,28 +22,43 @@ def evaluation(model):
 
   for file in sorted(test_files):
     if file[51:56] == "nm-05" or file[51:56] == "nm-06":
-      prove_images.append(file)
+      probe_images.append(file)
     if file[51:56] == "nm-01" or file[51:56] == "nm-02" or file[51:56] == "nm-03" or file[51:56] == "nm-04":
       gallery_images.append(file)
 
-  print(len(prove_images) * len(gallery_images))
+# view [57:60]
+  # search the missing data
+  # for i in range(75,125):
+  #   count = 0
+  #   for g in gallery_images:
+  #     if "nm-04" == g[51:56] and i == int(g[47:50]):
+  #       count += 1
+  #   if count != 11:
+  #     print(i)
+
+
   dist = []
+  view_list = ["000", "018", "036", "054", "072", "090", "108", "126", "144", "162", "180"]
+
   # recognition part
-  for i, prove_image in enumerate(prove_images):
-    prove_image = Image.open(prove_image).convert('RGB')
-    prove_image = transform(prove_image)
-    prove_image = prove_image.unsqueeze(0)
-    _, prove_feature = model.forward(prove_image)
-    for j, gallery_image in enumerate(gallery_images):
+  for i, probe_image in enumerate(probe_images, 75):
+    print(f'{i}th start')
+    probe_image = Image.open(probe_image).convert('RGB')
+    probe_image = transform(probe_image)
+    probe_image = probe_image.unsqueeze(0)
+    _, probe_feature = model.forward(probe_image)
+    for j, gallery_image in enumerate(gallery_images, 75):
+      id = gallery_image[47:50]
+      if not int(id) == 75:
+        break
       gallery_image = Image.open(gallery_image).convert('RGB')
       gallery_image = transform(gallery_image)
       gallery_image = gallery_image.unsqueeze(0)
       _, gallery_feature = model.forward(gallery_image)
-      # dist.append(abs((sum(sum(np.array((prove_feature.tolist())))) - sum(sum(np.array((gallery_feature.tolist())))))/74.0))
-      break
+      squ_diff_list = np.array(torch.square(probe_feature - gallery_feature).tolist())
+      dist.append(np.sqrt(np.sum(np.sum(squ_diff_list))))
     break
-
-  return dist
+  return np.array(dist)
 def main():
   geinet = GEINet()
   eval = evaluation(geinet)
