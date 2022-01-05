@@ -1,5 +1,6 @@
 # Yoshiki Maruya
 import glob
+from types import DynamicClassAttribute
 from PIL import Image
 from numpy.random import f
 from model.geinet import GEINet
@@ -7,6 +8,7 @@ from torch import nn
 import numpy as np
 from torchvision import transforms
 import torch
+from tool import calc_feature
 
 DIR = '/home/yoshimaru/gait/GEINet/gei_image/test_gei/'
 
@@ -37,31 +39,54 @@ def evaluation(model):
   #     print(i)
 
 
-  dist = []
-  view_list = ["000", "018", "036", "054", "072", "090", "108", "126", "144", "162", "180"]
+  # view_list = ["000", "018", "036", "054", "072", "090", "108", "126", "144", "162", "180"]
+  same_id_same_view = []
+  same_id_other_view = []
+  other_id_same_view = []
+  other_id_other_view = []
 
   # recognition part
   for i, probe_image in enumerate(probe_images, 75):
     print(f'{i}th start')
-    probe_image = Image.open(probe_image).convert('RGB')
-    probe_image = transform(probe_image)
-    probe_image = probe_image.unsqueeze(0)
-    _, probe_feature = model.forward(probe_image)
+    p_id = probe_image[47:50]
+    p_view = probe_image[57:60]
+    if not int(p_id) == 75:
+      break
+    probe_feature = calc_feature(probe_image, transform, model)
     for j, gallery_image in enumerate(gallery_images, 75):
-      id = gallery_image[47:50]
-      if not int(id) == 75:
+      g_id = gallery_image[47:50]
+      g_view = gallery_image[57:60]
+      if int(g_id) == 80:
         break
-      gallery_image = Image.open(gallery_image).convert('RGB')
-      gallery_image = transform(gallery_image)
-      gallery_image = gallery_image.unsqueeze(0)
-      _, gallery_feature = model.forward(gallery_image)
+      gallery_feature = calc_feature(gallery_image, transform, model)
       squ_diff_list = np.array(torch.square(probe_feature - gallery_feature).tolist())
-      dist.append(np.sqrt(np.sum(np.sum(squ_diff_list))))
+      dist = np.sqrt(np.sum(np.sum(squ_diff_list)))
+      if p_id == g_id and p_view == g_view:
+        print(p_id, g_id, p_view, g_view)
+        same_id_same_view.append(dist)
+      if p_id == g_id and p_view != g_view:
+        print(p_id, g_id, p_view, g_view)
+        same_id_other_view.append(dist)
+      if p_id != g_id and p_view == g_view:
+        print(p_id, g_id, p_view, g_view)
+        other_id_same_view.append(dist)
+      if p_id != g_id and p_view != g_view:
+        print(p_id, g_id, p_view, g_view)
+        other_id_other_view.append(dist)
     break
-  return np.array(dist)
+  return np.array(same_id_same_view), np.array(same_id_other_view), np.array(other_id_same_view), np.array(other_id_other_view)
 def main():
   geinet = GEINet()
-  eval = evaluation(geinet)
-  print(eval)
+  same_id_same_view, same_id_other_view, other_id_same_view, other_id_other_view = evaluation(geinet)
+  print("----------------samesame----------------")
+  print(same_id_same_view)
+  print("----------------sameother----------------")
+  print(same_id_other_view)
+  print("----------------othersame----------------")
+  print(other_id_same_view)
+  print("----------------otherother----------------")
+  print(other_id_other_view)
+  print(len(same_id_same_view), len(same_id_other_view))
+  print(len(other_id_same_view), len(other_id_other_view))
 if __name__ == "__main__":
   main()
