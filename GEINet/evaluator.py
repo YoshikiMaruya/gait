@@ -40,17 +40,21 @@ def evaluation(model):
 
 
   # view_list = ["000", "018", "036", "054", "072", "090", "108", "126", "144", "162", "180"]
-  same_id_same_view = []
-  same_id_other_view = []
-  other_id_same_view = []
-  other_id_other_view = []
+  ss = []
+  so = []
+  os = []
+  oo = []
 
   # recognition part
   for i, probe_image in enumerate(probe_images, 75):
     print(f'{i}th start')
+    same_id_same_view = []
+    same_id_other_view = []
+    other_id_same_view = []
+    other_id_other_view = []
     p_id = probe_image[47:50]
     p_view = probe_image[57:60]
-    if not int(p_id) == 75:
+    if i == 77:
       break
     probe_feature = calc_feature(probe_image, transform, model)
     for j, gallery_image in enumerate(gallery_images, 75):
@@ -73,11 +77,35 @@ def evaluation(model):
       if p_id != g_id and p_view != g_view:
         print(p_id, g_id, p_view, g_view)
         other_id_other_view.append(dist)
-    break
-  return np.array(same_id_same_view), np.array(same_id_other_view), np.array(other_id_same_view), np.array(other_id_other_view)
+    ss.append(same_id_same_view)
+    so.append(same_id_other_view)
+    os.append(other_id_same_view)
+    oo.append(other_id_other_view)
+  return np.array(ss), np.array(so), np.array(os), np.array(oo)
 def main():
   geinet = GEINet()
   same_id_same_view, same_id_other_view, other_id_same_view, other_id_other_view = evaluation(geinet)
+  np.save(
+    "same_id_same_view",
+    same_id_same_view,
+    fix_imports = True
+  )
+  np.save(
+    "same_id_other_view",
+    same_id_other_view,
+    fix_imports = True
+  )
+  np.save(
+    "other_id_same_view",
+    other_id_same_view,
+    fix_imports = True
+  )
+  np.save(
+    "other_id_other_view",
+    other_id_other_view,
+    fix_imports = True
+  )
+
   print("----------------samesame----------------")
   print(same_id_same_view)
   print("----------------sameother----------------")
